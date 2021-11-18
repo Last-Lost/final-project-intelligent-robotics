@@ -65,6 +65,14 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/socspioneer" TYPE PROGRAM FILES "/home/iniyan/catkin_ws/build/socspioneer/catkin_generated/installspace/listener.py")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/socspioneer" TYPE PROGRAM FILES "/home/iniyan/catkin_ws/build/socspioneer/catkin_generated/installspace/listenodom.py")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/socspioneer" TYPE PROGRAM FILES "/home/iniyan/catkin_ws/build/socspioneer/catkin_generated/installspace/listener3.py")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/socspioneer" TYPE PROGRAM FILES "/home/iniyan/catkin_ws/build/socspioneer/catkin_generated/installspace/listener5.py")
 endif()
 

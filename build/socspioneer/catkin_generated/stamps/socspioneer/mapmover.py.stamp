@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# from re import X
 import rospy
+import math
 from geometry_msgs.msg import Twist
 # from sensor_msgs.msg import LaserScan
 
@@ -62,36 +62,85 @@ from geometry_msgs.msg import Twist
     
 
 def mapmover():
+
     pub = rospy.Publisher("cmd_vel", Twist, queue_size=100)
     rospy.init_node("Map_Mover", anonymous=True)
-    # rate = rospy.Rate(10) # 10hz
-    # global angular_vel
-    # global x_vel
+    rate = rospy.Rate(20) # 10hz
+
     while not rospy.is_shutdown():
-        # laser_range = []
+
         base_data = Twist()
-        # base_data.linear.x = 0.1
-        # listener()
 
         filereader = open("direction.txt", "r")
-        direction = filereader.read(-1)
+        direction = filereader.read(1)
         filereader.close()
 
+        print(direction)
+
+        # fileOdom = open("odomdata.txt", "r")
+        # angle = fileOdom.read()
+        # fileOdom.close()
+
+        # if len(angle) != "-":
+        #     if direction == "l":
+        #         base_data.angular.z = (3.14/6)
+        #         print("In l")
+        #     elif direction == "x":
+        #         base_data.angular.z = (3.14/5)
+        #         print("In x")
+        #     elif direction == "c":
+        #         base_data.linear.x = 0.2
+        #         print("In c")
+        #     elif direction == "y":
+        #         base_data.angular.z = -(3.14/5)
+        #         print("In y")
+        #     elif direction == "r":
+        #         base_data.angular.z = -(3.14/6)
+        #         print("In r")
+        #     else:
+        #         print("did not work " + direction + " char")
+        # elif len(angle) == "-":
+        #     if direction == "l":
+        #         base_data.angular.z = -(3.14/6)
+        #         print("In l")
+        #     elif direction == "x":
+        #         base_data.angular.z = -(3.14/5)
+        #         print("In x")
+        #     elif direction == "c":
+        #         base_data.linear.x = 0.2
+        #         print("In c")
+        #     elif direction == "y":
+        #         base_data.angular.z = (3.14/5)
+        #         print("In y")
+        #     elif direction == "r":
+        #         base_data.angular.z = (3.14/6)
+        #         print("In r")
+        #     else:
+        #         print("did not work " + direction + " char")
+        # else:
+        #     print("empty")
+
         if direction == "l":
-            base_data.angular.z = -(3.14/4)
+            base_data.angular.z = -(math.pi/5)
+            print("In l")
         elif direction == "x":
-            base_data.angular.z = -(3.14/8)
+            base_data.angular.z = -(math.pi/10)
+            print("In x")
         elif direction == "c":
-            base_data.linear.x = 0.5
+            base_data.linear.x = 0.2
+            print("In c")
         elif direction == "y":
-            base_data.angular.z = (3.14/8)
+            base_data.angular.z = (math.pi/10)
+            print("In y")
         elif direction == "r":
-            base_data.angular.z = (3.14/4)
+            base_data.angular.z = (math.pi/5)
+            print("In r")
+        else:
+            print("did not work " + direction + " char")
 
-
-        
         pub.publish(base_data)
-        # rate.sleep()
+        rate.sleep()
+
 
 if __name__ == "__main__":
     try:

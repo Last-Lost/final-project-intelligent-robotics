@@ -10,6 +10,6 @@ install(DIRECTORY
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
  )
 
-catkin_install_python(PROGRAMS talker.py mapmover.py listener.py
+catkin_install_python(PROGRAMS talker.py mapmover.py listenodom.py listener3.py listener5.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
