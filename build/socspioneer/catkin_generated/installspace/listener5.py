@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import LaserScan
+# from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 def get_direction_averages(ranges):
 
@@ -27,53 +28,6 @@ def findDirection(ranges, prev):
     min_avg = min(left_avg, leftcenter_avg, center_avg, rightcenter_avg, right_avg)
     max_avg = max(left_avg, leftcenter_avg, center_avg, rightcenter_avg, right_avg)
 
-
-    # if (center_avg >= 0.5) and (max_avg != center_avg):
-    #     return "c"
-
-    # if min_avg <= 0.5:
-    #     if left_avg == min_avg:
-    #         return "r"
-    #     elif leftcenter_avg == min_avg:
-    #         return "y"
-    #     elif center_avg == min_avg:
-    #         if max_avg == left_avg:
-    #             return "l"
-    #         elif max_avg == leftcenter_avg:
-    #             return "x"
-    #         elif max_avg == center_avg:
-    #             return "c"
-    #         elif max_avg == rightcenter_avg:
-    #             return "y"
-    #         elif max_avg == right_avg:
-    #             return "r"
-    #     elif rightcenter_avg == min_avg:
-    #         return "x"
-    #     elif right_avg == min_avg:
-    #         return "l"
-
-    # if max_avg == left_avg:
-    #     direction = "l"
-    # elif max_avg == leftcenter_avg:
-    #     direction = "x"
-    # elif max_avg == center_avg:
-    #     direction = "c"
-    #     return direction
-    # elif max_avg == rightcenter_avg:
-    #     direction = "y"
-    # elif max_avg == right_avg:
-    #     direction = "r"
-
-    # if center_avg == min_avg or center_avg != max_avg:
-    #     if prev == "l" and (direction == "r" or direction == "y"):
-    #         return "l"
-    #     elif prev == "x" and (direction == "r" or direction == "y"):
-    #         return "x"
-    #     elif prev == "y" and (direction == "l" or direction == "x"):
-    #         return "y"
-    #     elif prev == "r" and (direction == "l" or direction == "x"):
-    #         return "r"
-
     if max_avg == left_avg:
         direction = "l"
     elif max_avg == leftcenter_avg:
@@ -85,8 +39,6 @@ def findDirection(ranges, prev):
     elif max_avg == right_avg:
         direction = "r"
 
-    # if center_avg > 0.5 and min_avg > 0.5:
-    #     direction = "c"
     if min_avg == center_avg and center_avg <= 0.5:
         if prev == "l" and (direction == "y" or direction == "r"):
             direction = "l"
@@ -112,10 +64,9 @@ def findDirection(ranges, prev):
         direction = "y"
     elif prev == "r" and (direction == "x" or direction == "l"):
         direction = "r"
-    else:
-        print("In else")
 
     return direction
+    
 
 def callback(msg):
 
@@ -142,20 +93,13 @@ def callback(msg):
 
 def listener5():
 
-    # rate = rospy.Rate(10) # 10hz
-
-    # rospy.init_node("scan_values", anonymous=True)
-    # laser_data = LaserScan()
-    # rospy.Subscriber("base_scan", laser_data, callback)
-    # rospy.spin()
-
     rospy.init_node('LaserData', anonymous=True)
     rospy.Subscriber("base_scan", LaserScan, callback)
     rospy.spin()
-    # rate.sleep()
 
 
 if __name__ == "__main__":
+
     try:
         listener5()
     except:

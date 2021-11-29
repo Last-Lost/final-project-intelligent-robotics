@@ -4,7 +4,6 @@ import math
 from nav_msgs.msg import Odometry
 
 def callbackOdom(msg):
-    # angle = msg.twist.angular.z
 
     print("w = ", (2 * (math.acos(msg.pose.pose.orientation.w)) * (180/math.pi)))
 
