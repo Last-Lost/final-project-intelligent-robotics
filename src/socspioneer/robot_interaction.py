@@ -1,37 +1,22 @@
-# Libraries
-import re
+#!/usr/bin/env python
+
+import rospy
 import time
+import math
 import pyaudio
 import wave
-import speech_recognition as sr
 import pyttsx3
-from change_angle import changeAngle
-import rospy
-import random as r
-import math
-from RobotMovement import RobotMovementThread
-from geometry_msgs.msg import Twist
-
-r.seed(0)
-"""
-Explain the class here
-"""
-
-# 
-
+import speech_recognition as sr
 import Levenshtein as l
+from change_angle import changeAngle
+from RobotMovement import RobotMovementThread
 
-"""
-future: when the path is calculated, get the distance and say the number of steps as well.
-"""
-
-# rooms = [ "robotics teaching lab","medical imaging lab", "plant room", "gents toilet", "lift", "robotics lab",
-        #  "vending machines", "lower ground 21", "lower ground 23", "lower ground 26", "lower ground 30b", "lower ground 3b", "lower ground 3a", "lower ground 4", "mohan's room"]
 jargon = ["take", "me", "where", "is", "navigate","to", "the", "can", "you", "please", "show", "way", "guide", "how", "do", "i", "get", "path", "lets", "let's","on","a"]
+
 total_coordinates = {
             "robotics teaching lab":((6.90, -10.15), (math.pi/4)),
             "medical imaging lab" : ((10.25,-6.90), (math.pi/4)),
-            "plant room":((11.50, -5.00), (math.pi/4)), # uncomment this
+            "plant room":((11.50, -5.00), (math.pi/4)),
             "gents toilet": ((11.75, -3.45),(3*math.pi/4)),
             "lift": ((9.50, -3.50), (3*math.pi/4)),
             "robotics lab": ((5.00, -7.35), (-(3*math.pi/4))),
@@ -42,9 +27,9 @@ total_coordinates = {
             "meeting room": ((-3.40, 9.30),(-(math.pi/4))),
             "ladies toilet":((-3.45, 11.40), (-(math.pi/4))),
             "teaching lab" : ((-6.60, 10.50), (3*math.pi/4)),
-            "guided tour":((2,2), -(3*math.pi/4)),
-            "sentry mode": None
+            "guided tour":((2,2), -(3*math.pi/4))
             }
+
 rooms = list(total_coordinates.keys())
 
 def _clean_input(input_text):
@@ -130,13 +115,14 @@ class RobotInteraction:
 
 
     def speech(self, message):
-        self.engine.setProperty("voice", "english+f2")
+
         self.engine.say(message)
         self.engine.runAndWait()
         self.engine.stop()
 
 
     def _get_input(self):
+
         self._record_audio()
 
         r = sr.Recognizer()
@@ -154,6 +140,7 @@ class RobotInteraction:
 
 
     def get_input(self):
+
         while True:
             print("listening")
             input = self._get_input()
@@ -248,6 +235,7 @@ class RobotInteraction:
 
 
     def get_coordinates(self, room_name=None):
+
         if room_name in rooms and room_name != "guided tour":
             return total_coordinates[room_name]
         elif room_name == "guided tour":
@@ -267,6 +255,7 @@ def main():
 
     
 if __name__ == "__main__":
+    
     try:
         main()
         rospy.signal_shutdown("* finished")

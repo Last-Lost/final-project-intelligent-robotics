@@ -18,16 +18,12 @@ def mapmover():
         direction = filereader.read(1)
         filereader.close()
 
-        print(direction)
-
         if direction == "l":
             base_data.angular.z = -(math.pi/5)
         elif direction == "c":
             base_data.linear.x = 0.2
         elif direction == "r":
             base_data.angular.z = (math.pi/5)
-        else:
-            print("did not work " + direction + " char")
 
         pub.publish(base_data)
         rate.sleep()

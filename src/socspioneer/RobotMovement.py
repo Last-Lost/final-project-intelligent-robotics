@@ -70,8 +70,6 @@ class RobotMovementThread():
 
         elif self.goal_state[0] - self.goal_state[1] - 12 >= 0 and self.initial_state == (2,2):
 
-            print("sector 3")
-
             t1 = threading.Thread(target = self.AStarThread, args = ((7, -5), ), daemon = True)
 
             t2 = threading.Thread(target = self.MapMoverThread, args = (MapMover_object, 3, ))
@@ -90,8 +88,6 @@ class RobotMovementThread():
             self.rotate = MapMover_object1.getAngle()
             
         else:
-
-            print("sector 2")
 
             obj = AStar(self.initial_state, self.goal_state)
 
