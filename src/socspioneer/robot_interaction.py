@@ -10,6 +10,7 @@ import rospy
 import random as r
 import math
 from RobotMovement import RobotMovementThread
+from geometry_msgs.msg import Twist
 
 r.seed(0)
 """
@@ -26,11 +27,11 @@ future: when the path is calculated, get the distance and say the number of step
 
 # rooms = [ "robotics teaching lab","medical imaging lab", "plant room", "gents toilet", "lift", "robotics lab",
         #  "vending machines", "lower ground 21", "lower ground 23", "lower ground 26", "lower ground 30b", "lower ground 3b", "lower ground 3a", "lower ground 4", "mohan's room"]
-jargon = ["take", "me", "where", "is", "navigate","to", "the", "can", "you", "please", "show", "way", "guide", "how", "do", "i", "get", "path", "lets", "let's"]
+jargon = ["take", "me", "where", "is", "navigate","to", "the", "can", "you", "please", "show", "way", "guide", "how", "do", "i", "get", "path", "lets", "let's","on","a"]
 total_coordinates = {
             "robotics teaching lab":((6.90, -10.15), (math.pi/4)),
             "medical imaging lab" : ((10.25,-6.90), (math.pi/4)),
-            "plant room":((11.50, -5.00), (math.pi/4)),
+            "plant room":((11.50, -5.00), (math.pi/4)), # uncomment this
             "gents toilet": ((11.75, -3.45),(3*math.pi/4)),
             "lift": ((9.50, -3.50), (3*math.pi/4)),
             "robotics lab": ((5.00, -7.35), (-(3*math.pi/4))),
@@ -40,23 +41,11 @@ total_coordinates = {
             "water dispenser":((-2.45, 5.35),(math.pi/4)),
             "meeting room": ((-3.40, 9.30),(-(math.pi/4))),
             "ladies toilet":((-3.45, 11.40), (-(math.pi/4))),
-            "teaching lab" : ((-6.60, 10.50), (3*math.pi/4))
+            "teaching lab" : ((-6.60, 10.50), (3*math.pi/4)),
+            "guided tour":((2,2), -(3*math.pi/4)),
+            "sentry mode": None
             }
 rooms = list(total_coordinates.keys())
-"""
-not in rooms list
-    - lift
-    - gents toilet
-    - robotics teaching lab
-    - vending machines
-    - printer
-    - server room
-    - water dispenser
-    - ladies room
-    - meeting room
-"""
-# temp
-
 
 def _clean_input(input_text):
     text = [x for x in input_text.strip().lower().split(" ")
@@ -94,25 +83,14 @@ def generate_reply_message(text):
     # generates an output message and returns the output message and the room name
     return f"Okay let's head to {room_name}. ", room_name
 
-# 
 
 class RobotInteraction:
-    """
-    Things to do:
-        * Take input from user
-        * Analyse it
-            * If input is valid
-                * Check if room is present in the lab
-                * Get coordinates
-            * If input is not valid
-                * Ask user to repeat
-        * Return coordinates
-    """
 
     def __init__(self):
         self._WAVE_OUTPUT_FILENAME = "output.wav"
         self.room_name = ""
         self.engine = pyttsx3.init()
+
 
     def _record_audio(self):
         """
@@ -150,11 +128,13 @@ class RobotInteraction:
         wf.writeframes(b''.join(frames))
         wf.close()
 
+
     def speech(self, message):
         self.engine.setProperty("voice", "english+f2")
         self.engine.say(message)
         self.engine.runAndWait()
         self.engine.stop()
+
 
     def _get_input(self):
         self._record_audio()
@@ -172,6 +152,7 @@ class RobotInteraction:
                 self.speech("Invalid input, try again please.")
             return text
 
+
     def get_input(self):
         while True:
             print("listening")
@@ -185,86 +166,109 @@ class RobotInteraction:
 
                 output_message, room_name = generate_reply_message(input)
                 coordinates = self.get_coordinates(room_name=room_name)
+                # tuple -> one coorindate
+                # list of tuples
 
                 self.speech(output_message)
                 self.room_name = room_name
 
-                return coordinates
+                if room_name != "guided tour":
+                
+                    RobotMovementThread_object = RobotMovementThread((2,2), coordinates[0], (-(math.pi/2)), [], False)
+                    RobotMovementThread_object.move_robot()
+                    directions = RobotMovementThread_object.getDirections()
+                    angle = RobotMovementThread_object.getAngle()
+
+                    facing_angle = (angle - coordinates[1])
+                    changeAngle(facing_angle)
+
+                    self.speech(f"Reached {room_name}")
+
+                    time.sleep(5)
+
+                    self.speech("Returning Home")
+
+                    changeAngle(-(facing_angle))
+
+                    return_home_direction = []
+
+                    for direction in directions:
+
+                        if direction == "t":
+                            return_home_direction.append("b")
+                        elif direction == "r":
+                            return_home_direction.append("l")
+                        elif direction == "b":
+                            return_home_direction.append("t")
+                        elif direction == "l":
+                            return_home_direction.append("r")
+
+                    RobotMovementThread_object2 = RobotMovementThread((coordinates[0]), (2,2), angle, return_home_direction[::-1], True)
+                    RobotMovementThread_object2.move_robot()
+                    angle = RobotMovementThread_object2.getAngle()
+
+                    self.speech("Reached Home")
+
+                elif room_name == "guided tour":
+                    
+                    INITIAL_STATE = (2,2)
+                    INITIAL_ANGLE = -(math.pi/2)
+
+                    self.speech("Let's Go on a Guided Tour")
+
+                    for room_name, coordinate in total_coordinates.items():
+                        self.speech(f"Let's head to {room_name}")
+
+                        RobotMovementThread_object = RobotMovementThread(INITIAL_STATE, coordinate[0], INITIAL_ANGLE, [], False)
+
+                        RobotMovementThread_object.move_robot()
+                        angle = RobotMovementThread_object.getAngle()
+                        INITIAL_STATE = coordinate[0]
+                        INITIAL_ANGLE = angle
+
+                        facing_angle = (angle - coordinate[1])
+                        changeAngle(facing_angle)
+
+
+                        self.speech(f"Reached {room_name}")
+
+                        time.sleep(5)
+
+                        self.speech("Heading to the next room now.")
+
+                        changeAngle(-(facing_angle))
+                    
             else:
                 # while the input is not valid the loop keeps running
                 continue
 
+
     def get_roomname(self):
         return self.room_name
 
-    def get_coordinates(self, room_name=None):
-        if room_name:
-            return total_coordinates[room_name]
-        return "error inside get_coordinates() - robot_interaction.py - room name does not exist in the file"
 
-        # get coordinates of the room name using room_name from a file and return it
-        # coordinates = get_coordinates(room_name)
-        # return coordinates``
+    def get_coordinates(self, room_name=None):
+        if room_name in rooms and room_name != "guided tour":
+            return total_coordinates[room_name]
+        elif room_name == "guided tour":
+            return list(total_coordinates.values())
+        else:
+            return "error inside get_coordinates() - robot_interaction.py - room name does not exist in the file"
 
 
 def main():
-    OUTPUT_FILE_NAME = "coodinates.txt"
 
     rospy.init_node("robot_interaction", anonymous=True)
     ri = RobotInteraction()
     coordinates = ri.get_input()
     room_name = ri.get_roomname()
 
-    # print(coordinates)
-    RobotMovementThread_object = RobotMovementThread((2,2), coordinates[0], (-(math.pi/2)), [], False)
-    RobotMovementThread_object.move_robot()
-    directions = RobotMovementThread_object.getDirections()
-    angle = RobotMovementThread_object.getAngle()
-
-    facing_angle = (angle - coordinates[1])
-    changeAngle(facing_angle)
-
-    ri.speech(f"Reached {room_name}")
-
-    time.sleep(5)
-
-    ri.speech("Returning Home")
-
-    changeAngle(-(facing_angle))
-
-    return_home_direction = []
-
-    for direction in directions:
-
-        if direction == "t":
-            return_home_direction.append("b")
-        elif direction == "r":
-            return_home_direction.append("l")
-        elif direction == "b":
-            return_home_direction.append("t")
-        elif direction == "l":
-            return_home_direction.append("r")
-
-    RobotMovementThread_object2 = RobotMovementThread((coordinates[0]), (2,2), angle, return_home_direction[::-1], True)
-    RobotMovementThread_object2.move_robot()
-    angle = RobotMovementThread_object2.getAngle()
-
-    # changeAngle((angle - math.pi/2))
-
-    ri.speech("Reached Home")
-
-    # # clear existing coordinates file
-    # open(OUTPUT_FILE_NAME,"w").close()
-
-    # # add new coordintes to file
-    # with open(OUTPUT_FILE_NAME,"w") as f:
-    #     f.write(str(coordinates))
     rospy.spin()
+
     
 if __name__ == "__main__":
     try:
         main()
-        # RobotMovement.main()
         rospy.signal_shutdown("* finished")
     except Exception as e:
         rospy.loginfo("Error inside robot_interaction")

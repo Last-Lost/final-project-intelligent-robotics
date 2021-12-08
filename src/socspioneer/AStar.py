@@ -231,8 +231,6 @@ class AStar:
 
             if node[0] == self.goal_pair:
 
-                # print("GOAL STATE REACHED")
-
                 return True
         
         return False
@@ -355,8 +353,6 @@ class AStar:
 
             direction = self.find_direction(lowest_node)
 
-            # print(lowest_node, "", direction)
-
             new_nodes = self.find_neighbours(lowest_node[0], lowest_node[2], lowest_node[1])
 
             if len(new_nodes) != 0:
@@ -397,8 +393,6 @@ class AStar:
 
         direction = []
 
-        # print(self.path)
-
         for node in self.path:
 
             xDiff = node[0][0] - node[1][0]
@@ -414,19 +408,3 @@ class AStar:
                 direction.append("l")
             
         return direction
-
-
-# obj = AStar((-5, 6), (-7.25, 4.75))
-
-# obj.AStarPathPlanning()
-
-# directions = obj.convert_path()
-
-# print(directions)
-
-# filewriter = open("sector3.txt", "a")
-
-# for direction in directions:
-#     filewriter.write(direction + "\n")
-
-# filewriter.close()

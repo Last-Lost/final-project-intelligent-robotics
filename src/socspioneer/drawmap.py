@@ -9,7 +9,6 @@ import numpy as np
 filereader = open("grid.txt", "r")
 grid_dict = {}
 grids = filereader.read().split("\n")
-# print(len(grids), "Hi", grids[-1], "Hi")
 filereader.close()
 
 for grid in grids:
@@ -62,11 +61,7 @@ for key, value in grid_dict.items():
     
 data = np.array(grid_array).reshape(602,602)
 
-# # print(data)
-
 data = np.transpose(data)
-
-# print(transposed_data)
 
 filewriter = open("grid_map.txt", "a")
 

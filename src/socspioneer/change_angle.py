@@ -7,7 +7,6 @@ from geometry_msgs.msg import Twist
 def changeAngle(initial_angle):
 
     pub = rospy.Publisher("cmd_vel", Twist, queue_size = 1000)
-    # rospy.init_node("Change_Angle", anonymous=True)
 
     base_data = Twist()
 
@@ -53,7 +52,3 @@ def changeAngle(initial_angle):
         base_data.angular.z = 0
         pub.publish(base_data)
         rospy.sleep(0.01)
-
-# changeAngle(3*(math.pi/4))
-
-

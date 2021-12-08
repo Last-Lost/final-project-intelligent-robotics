@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import math
 import threading
 from mapmover import MapMover
 from AStar import AStar
@@ -8,8 +7,6 @@ from AStar import AStar
 class RobotMovementThread():
 
     def __init__(self, initial_state, goal_state, angle, direction, return_home):
-
-        # print("I am being called")
 
         self.initial_state = initial_state
         self.goal_state = goal_state
@@ -31,12 +28,10 @@ class RobotMovementThread():
 
         if sector == 1:
 
-            # MapMover_object = MapMover()
             MapMover_object.map_mover([], self.rotate, 1)
 
         elif sector == 3:
 
-            # MapMover_object = MapMover()
             MapMover_object.map_mover([], self.rotate, 3)
 
         self.rotate = MapMover_object.getAngle()
@@ -54,23 +49,14 @@ class RobotMovementThread():
             self.rotate = MapMover_object1.getAngle()
 
 
-        elif self.goal_state[0] - self.goal_state[1] + 11 <= 0:
-
-            # print("sector 1")
+        elif self.goal_state[0] - self.goal_state[1] + 11 <= 0 and self.initial_state == (2,2):
 
             t1 = threading.Thread(target = self.AStarThread, args = ((-5, 6), ), daemon = True)
 
             t2 = threading.Thread(target = self.MapMoverThread, args = (MapMover_object, 1, ))
 
             t1.start()
-
-            # print("Thread 1 Started")
-
             t2.start()
-
-            # print("Thread 2 Started")
-
-            # rotate = mapmover([], -(math.pi/2), 1)
 
             t1.join()
             t2.join()
@@ -82,25 +68,16 @@ class RobotMovementThread():
             MapMover_object1.map_mover(self.direction, self.rotate, 0)
             self.rotate = MapMover_object1.getAngle()
 
-            # rotate = mapmover(self.direction, rotate, 0)
+        elif self.goal_state[0] - self.goal_state[1] - 12 >= 0 and self.initial_state == (2,2):
 
-        elif self.goal_state[0] - self.goal_state[1] - 12 >= 0:
-
-            # print("sector 3")
+            print("sector 3")
 
             t1 = threading.Thread(target = self.AStarThread, args = ((7, -5), ), daemon = True)
 
             t2 = threading.Thread(target = self.MapMoverThread, args = (MapMover_object, 3, ))
 
             t1.start()
-
-            # print("Thread Started")
-
             t2.start()
-
-            # print("Thread 2 Started")
-
-            # rotate = mapmover([], -(math.pi/2), 3)
 
             t1.join()
             t2.join()
@@ -111,12 +88,10 @@ class RobotMovementThread():
             MapMover_object1 = MapMover()
             MapMover_object1.map_mover(self.direction, self.rotate, 0)
             self.rotate = MapMover_object1.getAngle()
-
-            # rotate = mapmover(self.direction, rotate, 0)
             
         else:
 
-            # print("sector 2")
+            print("sector 2")
 
             obj = AStar(self.initial_state, self.goal_state)
 
@@ -129,8 +104,6 @@ class RobotMovementThread():
             self.rotate = MapMover_object1.getAngle()
 
             self.ini_direction = self.direction
-
-            # rotate = mapmover(direction, -(math.pi/2), 2)
 
     
     def getDirections(self):
