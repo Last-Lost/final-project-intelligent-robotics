@@ -1,488 +1,537 @@
 #!/usr/bin/env python
-import time
+
 import rospy
 import math
 from geometry_msgs.msg import Twist
 
-def robot_rotations(pub, base_data, count, ore):
+class MapMover:
 
-    # for i in range(count):
+    def __init__(self):
 
-    #     print(i)
+        # rospy.init_node("Map_Mover", anonymous=True)
 
-    #     if ore == '+':
+        self.directions = []
 
-    #         base_data.angular.z = (math.pi / 6 * 5)
-    #         pub.publish(base_data)
-    #         rospy.sleep(1)
+        self.rotate = 0
 
-    #     elif ore == '-':
 
-    #         base_data.angular.z = -(math.pi / 6 * 5)
-    #         pub.publish(base_data)
-    #         rospy.sleep(1)
+    def rotate_robot(self, pub, base_data, count, ore):
 
-    #     print(i)
+        if count == 10:
 
-    if ore == '+':
-        base_data.angular.z = math.pi / 2
-        for i in range(count):
-            # print(i)
+            base_data.angular.z = math.pi / 2
+
+            for i in range(count):
+
+                pub.publish(base_data)
+                rospy.sleep(2/count)
+
+            base_data.angular.z = 0
             pub.publish(base_data)
-            rospy.sleep(1/count)
-        base_data.angular.z = 0
-        pub.publish(base_data)
+            rospy.sleep(0.01)
 
-    elif ore  == '-':
-        for i in range(count):
+        elif ore == '+':
+
+            base_data.angular.z = math.pi / 2
+
+            for i in range(count):
+
+                pub.publish(base_data)
+                rospy.sleep(1/count)
+
+            base_data.angular.z = 0
+            pub.publish(base_data)
+            rospy.sleep(0.01)
+
+
+        elif ore  == '-':
+
             base_data.angular.z = -(math.pi / 2)
-            # print(i)
+
+            for i in range(count):
+
+                pub.publish(base_data)
+                rospy.sleep(1/count)
+
+            base_data.angular.z = 0
             pub.publish(base_data)
-            rospy.sleep(1/count)
-        base_data.angular.z = 0
-        pub.publish(base_data)
+            rospy.sleep(0.01)
 
-def robot_movement(pub, base_data):
 
-        duration = 5
-        base_data.linear.x = 0.05
 
-        for i in range(duration):
+    def move_robot(self, pub, base_data):
+
+            duration = 5
+            base_data.linear.x = 0.05
+
+            for i in range(duration):
+
+                pub.publish(base_data)
+                rospy.sleep(1 / duration)
+
+            base_data.linear.x = 0
             pub.publish(base_data)
-            rospy.sleep(1 / duration)
-
-        base_data.linear.x = 0
-        pub.publish(base_data)
 
 
-def mapmover():
+    def map_mover(self, path, initial_angle, sector):
 
-    pub = rospy.Publisher("cmd_vel", Twist, queue_size=5)
-    rospy.init_node("Map_Mover", anonymous=True)
-    # rate = rospy.Rate(10) # 10hz
-    rate = 1
+        pub = rospy.Publisher("cmd_vel", Twist, queue_size = 1000)
 
-    filereader = open("sector1.txt", "r")
-    directions = filereader.read().split("\n")
-    directions.remove("")
-    filereader.close()
+        # rospy.init_node("Map_Mover", anonymous=True)
 
-    print(directions)
+        # rate = rospy.Rate(10) # 10hz
+        # rate = 1
 
-    rotate = 0
+        if sector == 0:
 
-    # base_data = Twist()
+            # print(sector)
 
-    # rospy.sleep(1)
+            directions = path
 
-    # robot_rotations(pub, base_data, 6, "+")
+        elif sector == 1:
 
-    # base_data.linear.y = 0.5
+            # print(sector)
 
-    # pub.publish(base_data)
+            filereader = open("sector1.txt", "r")
+            directions = filereader.read().split("\n")
+            # directions.remove("")
+            filereader.close()
 
-    # rospy.sleep(rate)
+            rospy.sleep(5)
 
-    # base_data = Twist()
+        elif sector == 2:
 
-    # count = 0
+            # print(sector)
 
-    # while not rospy.is_shutdown():
+            directions = path
 
-    for direction in directions:
+        elif sector == 3:
 
-        print(direction)
+            # print(sector)
 
-        base_data = Twist()
+            filereader = open("sector3.txt", "r")
+            directions = filereader.read().split("\n")
+            # directions.remove("")
+            filereader.close()
+
+            rospy.sleep(5)
+
+        # print(directions, "\n")
+
+        rotate = initial_angle
+        self.directions = directions
+
+        for direction in directions:
+
+            base_data = Twist()
+
+            rospy.sleep(0.1)
+
+            if direction == "t":
+
+                if math.sin(rotate) ==  1:
+
+                    # print("In t t")
+
+                    self.move_robot(pub, base_data)
+            
+                    # base_data.linear.x = 0.05
+                    # rotate = rotate + 0
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) ==  1:
+
+                    # print("In t r")
+                    
+                    self.rotate_robot(pub, base_data, 5, '+')
+                    rotate = rotate + (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = - (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.sin(rotate) == -1:
+
+                    # print("In t b")
+
+                    self.rotate_robot(pub, base_data, 10, '+')
+                    rotate = rotate + math.pi
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) == -1:
+
+                    # print("In t l")
+
+                    self.rotate_robot(pub, base_data, 5, '-')
+                    rotate = rotate - (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                # else:
+                #     print("didn't move")
+
+            elif direction == "r":
+                
+                if math.sin(rotate) ==  1:
+
+                    # print("In r t")
+                    
+                    self.rotate_robot(pub, base_data, 5, '-')
+                    rotate = rotate - (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) ==  1:
+
+                    # print("In r r")
+
+                    self.move_robot(pub, base_data)
+
+                    # base_data.linear.x =0.05
+                    # rotate = rotate + 0
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.sin(rotate) == -1:
+
+                    print("In r b")
+
+                    self.rotate_robot(pub, base_data, 5, '+')
+                    rotate = rotate + (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = - (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) == -1:
+
+                    # print("In r l")
+
+                    self.rotate_robot(pub, base_data, 10, '+')
+                    rotate = rotate + (math.pi)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                # else:
+                #     print("didn't move")
+
+            elif direction == "b":
+                
+                if math.sin(rotate) ==  1:
+
+                    # print("In b t")
+
+                    self.rotate_robot(pub, base_data, 10, '+')
+                    rotate = rotate + math.pi
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) ==  1:
+
+                    # print("In b r")
+                    
+                    self.rotate_robot(pub, base_data, 5, '-')
+                    rotate = rotate - (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.sin(rotate) == -1:
+
+                    # print("In b b")
+
+                    self.move_robot(pub, base_data)
+
+                    # base_data.linear.x =0.05
+                    # rotate = rotate + 0
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) == -1:
+                    
+                    # print("In b l")
+
+                    self.rotate_robot(pub, base_data, 5, '+')
+                    rotate = rotate + (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = - (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x = 0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                # else:
+                #     print("didn't move")
+
+            elif direction == "l":
+
+                if math.sin(rotate) ==  1:
+
+                    # print("In l t")
+
+                    self.rotate_robot(pub, base_data, 5, '+')
+                    rotate = rotate  + (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = - (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) == 1:
+
+                    # print("In l r")
+
+                    self.rotate_robot(pub, base_data, 10, '+')
+                    rotate = rotate + (math.pi)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.sin(rotate) == -1:
+
+                    # print("In l b")
+
+                    self.rotate_robot(pub, base_data, 5, '-')
+                    rotate = rotate - (math.pi/2)
+                    self.move_robot(pub, base_data)
+
+                    # base_data.angular.z = (math.pi/2)
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+                    # base_data = Twist()
+                    # base_data.linear.x =0.05
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
+
+                elif math.cos(rotate) == -1:
+
+                    # print("In l l")
+
+                    self.move_robot(pub, base_data)
 
         rospy.sleep(0.01)
 
-        # fileOdom = open("odomdata.txt", "r")
-        # angle = fileOdom.read()
-        # fileOdom.close()
+        self.rotate = rotate
 
-        if direction == "t":
+        # return rotate
 
-            if math.sin(rotate) ==  1:
+    
+    def getAngle(self):
 
-                print("In t t")
+        return self.rotate
 
-                robot_movement(pub, base_data)
-        
-                # base_data.linear.x = 0.05
-                # rotate = rotate + 0
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
+    
+    def getDirections(self):
 
-            elif math.cos(rotate) ==  1:
+        return self.directions
 
-                print("In t r")
-                
-                robot_rotations(pub, base_data, 5, '+')
-                # base_data.angular.z = - (math.pi/2)
-                rotate = rotate + (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
+                    # base_data.linear.x =0.05
+                    # rotate = rotate + 0
+                    # pub.publish(base_data)
+                    # rospy.sleep(rate)
 
-                robot_movement(pub, base_data)
+                # else:
+                #     print("didn't move")
 
-            elif math.sin(rotate) == -1:
+            # else:
+            #     print("did not work " + direction + " char")
 
-                print("In t b")
+            # print("\n")
 
-                robot_rotations(pub, base_data, 10, '+')
-                # base_data.angular.z = (math.pi)
-                rotate = rotate + math.pi
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.cos(rotate) == -1:
-
-                print("In t l")
-
-                robot_rotations(pub, base_data, 5, '-')
-
-                # base_data.angular.z = (math.pi/2)
-                rotate = rotate - (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            else:
-                print("didn't move")
-
-        elif direction == "r":
-            
-            if math.sin(rotate) ==  1:
-
-                print("In r t")
-                
-                robot_rotations(pub, base_data, 5, '-')
-
-                # base_data.angular.z = (math.pi/2)
-                rotate = rotate - (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-                
-            elif math.cos(rotate) ==  1:
-
-                print("In r r")
-
-                # base_data.linear.x =0.05
-                # rotate = rotate + 0
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.sin(rotate) == -1:
-
-                print("In r b")
-
-                robot_rotations(pub, base_data, 5, '+')
-                # base_data.angular.z = - (math.pi/2)
-                rotate = rotate + (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.cos(rotate) == -1:
-
-                print("In r l")
-
-                robot_rotations(pub, base_data, 10, '+')
-                # base_data.angular.z = (math.pi)
-                rotate = rotate + (math.pi)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            else:
-                print("didn't move")
-
-        elif direction == "b":
-            
-            if math.sin(rotate) ==  1:
-
-                print("In b t")
-
-                robot_rotations(pub, base_data, 10, '+')
-                # base_data.angular.z = (math.pi)
-                rotate = rotate + math.pi
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.cos(rotate) ==  1:
-
-                print("In b r")
-                
-                robot_rotations(pub, base_data, 5, '-')
-                # base_data.angular.z = (math.pi/2)
-                rotate = rotate - (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.sin(rotate) == -1:
-
-                print("In b b")
-
-                # base_data.linear.x =0.05
-                # rotate = rotate + 0
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.cos(rotate) == -1:
-                
-                print("In b l")
-
-                robot_rotations(pub, base_data, 5, '+')
-                # base_data.angular.z = - (math.pi/2)
-                rotate = rotate + (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x = 0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            else:
-                print("didn't move")
-
-        elif direction == "l":
-
-            if math.sin(rotate) ==  1:
-
-                print("In l t")
-
-                robot_rotations(pub, base_data, 5, '+')
-                # base_data.angular.z = - (math.pi/2)
-                rotate = rotate  + (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-                
-            elif math.cos(rotate) == 1:
-
-                print("In l r")
-
-                robot_rotations(pub, base_data, 10, '+')
-                # base_data.angular.z = (math.pi)
-                rotate = rotate + (math.pi)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.sin(rotate) == -1:
-
-                print("In l b")
-
-                robot_rotations(pub, base_data, 5, '-')
-                # base_data.angular.z = (math.pi/2)
-                rotate = rotate - (math.pi/2)
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-                # base_data = Twist()
-                # base_data.linear.x =0.05
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            elif math.cos(rotate) == -1:
-
-                print("In l l")
-
-                # base_data.linear.x =0.05
-                # rotate = rotate + 0
-                # pub.publish(base_data)
-                # rospy.sleep(rate)
-
-                robot_movement(pub, base_data)
-
-            else:
-                print("didn't move")
-
-        else:
-            print("did not work " + direction + " char")
-
-        print(rotate, "\n")
-
-    # duration = 5
-    # base_data.linear.x = 0.05
-    # for i in range(duration):
-    #     pub.publish(base_data)
-    #     rospy.sleep(1 / duration)
-
-
-    # base_data.linear.x = 0
-    # pub.publish(base_data)
-
-    #     time.sleep(1)
-
-        # 
+        # duration = 10
 
         # base_data = Twist()
-        # base_data.linear.x =0.5
-        # # rotate = rotate + 0
+
+        # rospy.sleep(0.01)
+
+        # self.rotate_robot(pub, base_data, 10, "+")
+
+        # duration = 5
+        # base_data.linear.x = 0.05
+        # for i in range(duration):
+        #     pub.publish(base_data)
+        #     rospy.sleep(1 / duration)
+
+
+        # base_data.linear.x = 0
+        # pub.publish(base_data)
+
+        #     time.sleep(1)
+
+            # 
+
+            # base_data = Twist()
+            # base_data.linear.x =0.5
+            # # rotate = rotate + 0
+            # pub.publish(base_data)
+            # rospy.sleep(rate)
+
+            # time.sleep(1)
+
+            # # pub.publish(base_data)
+            # # rospy.sleep(rate)
+
+        # base_data = Twist()
+        # base_data.angular.z = math.pi / 6 * 5 
         # pub.publish(base_data)
         # rospy.sleep(rate)
+        # # base_data = Twist()
+        # base_data.angular.z = math.pi / 6 * 5
+        # pub.publish(base_data)
+        # rospy.sleep(rate)
+        # # base_data = Twist()
+        # base_data.angular.z = math.pi / 6 * 5
+        # pub.publish(base_data)
+        # rospy.sleep(rate)
+        # # base_data = Twist()
+        # base_data.angular.z = math.pi / 6 * 5 
+        # pub.publish(base_data)
+        # rospy.sleep(rate)
+        # # base_data = Twist()
+        # base_data.angular.z = math.pi / 6 * 5 
+        # pub.publish(base_data)
+        # rospy.sleep(rate)
+        # # base_data = Twist()
+        # base_data.angular.z = math.pi / 6 * 5 
+        # pub.publish(base_data)
+
+        # self.rotate_robot(pub, base_data, 11)
+
+            # base_data = Twist()
+            # base_data.angular.z = math.pi / 10 
+            # pub.publish(base_data)
+            # base_data = Twist()
+            # base_data.angular.z = math.pi / 10
+            # pub.publish(base_data)
+            # base_data = Twist()
+            # base_data.angular.z = math.pi / 10 
+            # pub.publish(base_data)
+            # base_data = Twist()
+            # base_data.angular.z = math.pi / 10 
+            # pub.publish(base_data)
+
+        # duration = 10
+        # base_data.angular.z = math.pi / 2
+        # for i in range(duration):
+        #     pub.publish(base_data)
+        #     rospy.sleep(0.25)
+        
+        # base_data.angular.z = 0
+        # pub.publish(base_data)
+
+        # pub.publish(base_data)
+        # rospy.sleep(duration)
+        # base_data.angular.z = 0
+        # pub.publish(base_data)
+            
+            # base_data = Twist()
+            # base_data.angular.z = math.pi / 10
+            # pub.publish(base_data)
+            # base_data = Twist()
+            # base_data.angular.z = math.pi / 2 / 6
+            # pub.publish(base_data)
+            # base_data = Twist()
+            # base_data.angular.z = math.pi / 2 / 6
+            # pub.publish(base_data)
+
+        # rospy.sleep(rate)
+
+            # count+= 1
+
+            # print(count)
+
+            # base_data = Twist()
+            # base_data.angular.z = (math.pi / 2)
+            # pub.publish(base_data)
+            # rospy.sleep(rate)
+            # base_data = Twist()
+            # base_data.angular.z = (math.pi / 2)
+            # pub.publish(base_data)
+            # rospy.sleep(rate)
+            # base_data = Twist()
+            # base_data.angular.z = (math.pi / 2)
+            # pub.publish(base_data)
+            # rospy.sleep(rate)
+            # base_data = Twist()
+            # base_data.angular.z = (math.pi / 2)
+            # pub.publish(base_data)
+            # rospy.sleep(rate)
 
         # time.sleep(1)
 
-        # # pub.publish(base_data)
-        # # rospy.sleep(rate)
-
-    # base_data = Twist()
-    # base_data.angular.z = math.pi / 6 * 5 
-    # pub.publish(base_data)
-    # rospy.sleep(rate)
-    # # base_data = Twist()
-    # base_data.angular.z = math.pi / 6 * 5
-    # pub.publish(base_data)
-    # rospy.sleep(rate)
-    # # base_data = Twist()
-    # base_data.angular.z = math.pi / 6 * 5
-    # pub.publish(base_data)
-    # rospy.sleep(rate)
-    # # base_data = Twist()
-    # base_data.angular.z = math.pi / 6 * 5 
-    # pub.publish(base_data)
-    # rospy.sleep(rate)
-    # # base_data = Twist()
-    # base_data.angular.z = math.pi / 6 * 5 
-    # pub.publish(base_data)
-    # rospy.sleep(rate)
-    # # base_data = Twist()
-    # base_data.angular.z = math.pi / 6 * 5 
-    # pub.publish(base_data)
-
-    # robot_rotations(pub, base_data, 11)
-
-        # base_data = Twist()
-        # base_data.angular.z = math.pi / 10 
-        # pub.publish(base_data)
-        # base_data = Twist()
-        # base_data.angular.z = math.pi / 10
-        # pub.publish(base_data)
-        # base_data = Twist()
-        # base_data.angular.z = math.pi / 10 
-        # pub.publish(base_data)
-        # base_data = Twist()
-        # base_data.angular.z = math.pi / 10 
-        # pub.publish(base_data)
-
-    # duration = 10
-    # base_data.angular.z = math.pi / 2
-    # for i in range(duration):
-    #     pub.publish(base_data)
-    #     rospy.sleep(0.25)
-    
-    # base_data.angular.z = 0
-    # pub.publish(base_data)
-
-    # pub.publish(base_data)
-    # rospy.sleep(duration)
-    # base_data.angular.z = 0
-    # pub.publish(base_data)
         
-        # base_data = Twist()
-        # base_data.angular.z = math.pi / 10
-        # pub.publish(base_data)
-        # base_data = Twist()
-        # base_data.angular.z = math.pi / 2 / 6
-        # pub.publish(base_data)
-        # base_data = Twist()
-        # base_data.angular.z = math.pi / 2 / 6
-        # pub.publish(base_data)
 
-    # rospy.sleep(rate)
+    # if __name__ == "__main__":
 
-        # count+= 1
+    #     try:
+    #         mapmover()
+    #     except rospy.ROSInterruptException:
 
-        # print(count)
-
-        # base_data = Twist()
-        # base_data.angular.z = (math.pi / 2)
-        # pub.publish(base_data)
-        # rospy.sleep(rate)
-        # base_data = Twist()
-        # base_data.angular.z = (math.pi / 2)
-        # pub.publish(base_data)
-        # rospy.sleep(rate)
-        # base_data = Twist()
-        # base_data.angular.z = (math.pi / 2)
-        # pub.publish(base_data)
-        # rospy.sleep(rate)
-        # base_data = Twist()
-        # base_data.angular.z = (math.pi / 2)
-        # pub.publish(base_data)
-        # rospy.sleep(rate)
-
-    # time.sleep(1)
-    
-
-if __name__ == "__main__":
-
-    try:
-        mapmover()
-    except rospy.ROSInterruptException:
-
-        print("did not work")
-        pass
+    #         print("did not work")
+    #         pass

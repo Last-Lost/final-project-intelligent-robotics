@@ -1,11 +1,15 @@
+#!/usr/bin/env python
+
 import numpy as np
 
 class AStar:
 
     def __init__(self, initial_pair, goal_pair):
+
         self.grid_dict = self.readgrid()
         self.initial_pair = initial_pair
         self.goal_pair = goal_pair
+        self.path = []
 
 
     def readgrid(self):
@@ -95,14 +99,14 @@ class AStar:
 
         nodes = []
 
-        for i in range(10):
+        for i in range(5):
 
             nodes.append((current_pair[0], current_pair[1] - (i + 1)))
             nodes.append((current_pair[0] + i + 1, current_pair[1]))
             nodes.append((current_pair[0], current_pair[1] + i + 1))
             nodes.append((current_pair[0] - (i + 1), current_pair[1]))
 
-        for i in range(5):
+        for i in range(3):
 
             nodes.append((current_pair[0] + i + 1, current_pair[1] + i + 1))
             nodes.append((current_pair[0] - (i + 1), current_pair[1] + i + 1))
@@ -147,8 +151,6 @@ class AStar:
 
                 if value == 0:
 
-                    # print("FREE -", self.shift_from_origin(key), "-", key)
-
                     top_neighbour = (current_pair[0], current_pair[1] + 1)
 
                     xDistance = self.shift_to_origin(self.goal_pair)[0] - top_neighbour[0]
@@ -162,17 +164,10 @@ class AStar:
 
                     point = [self.shift_from_origin(top_neighbour), self.shift_from_origin(current_pair), count + 1, heuristics]
                     possiblePoints.append(point)
-                
-                # elif value == 1:
-                #     print("BLOCK -", self.shift_from_origin(key), "-", key)
-                # elif value == 2:
-                #     print("UNKNOWN -", self.shift_from_origin(key), "-", key)
 
             elif (current_pair[0] + 1) == key[0] and current_pair[1] == key[1] and direction != "l" and self.check_for_block((current_pair[0] + 1, current_pair[1])):
 
                 if value == 0:
-
-                    # print("FREE -", self.shift_from_origin(key), "-", key)
 
                     right_neighbour = (current_pair[0] + 1, current_pair[1])
 
@@ -189,16 +184,9 @@ class AStar:
                     point = [self.shift_from_origin(right_neighbour), self.shift_from_origin(current_pair), count + 1, heuristics]
                     possiblePoints.append(point)
 
-                # elif value == 1:
-                #     print("BLOCK -", self.shift_from_origin(key), "-", key)
-                # elif value == 2:
-                #     print("UNKNOWN -", self.shift_from_origin(key), "-", key)
-
             elif current_pair[0] == key[0] and (current_pair[1] - 1) == key[1] and direction != "t" and self.check_for_block((current_pair[0], current_pair[1] - 1)):
 
                 if value == 0:
-
-                    # print("FREE -", self.shift_from_origin(key), "-", key)
 
                     bottom_neighbour = (current_pair[0], current_pair[1] - 1)
 
@@ -215,16 +203,9 @@ class AStar:
                     point = [self.shift_from_origin(bottom_neighbour), self.shift_from_origin(current_pair), count + 1, heuristics]
                     possiblePoints.append(point)
 
-                # elif value == 1:
-                #     print("BLOCK -", self.shift_from_origin(key), "-", key)
-                # elif value == 2:
-                #     print("UNKNOWN -", self.shift_from_origin(key), "-", key)
-
             elif (current_pair[0] - 1) == key[0] and current_pair[1] == key[1] and direction != "r" and self.check_for_block((current_pair[0] - 1, current_pair[1])):
 
                 if value == 0:
-
-                    # print("FREE -", self.shift_from_origin(key), "-", key)
 
                     left_neighbour = (current_pair[0] - 1, current_pair[1])
 
@@ -241,11 +222,6 @@ class AStar:
                     point = [self.shift_from_origin(left_neighbour), self.shift_from_origin(current_pair), count + 1, heuristics]
                     possiblePoints.append(point)
 
-                # elif value == 1:
-                #     print("BLOCK -", self.shift_from_origin(key), "-", key)
-                # elif value == 2:
-                #     print("UNKNOWN -", self.shift_from_origin(key), "-", key)
-        
         return possiblePoints
 
 
@@ -255,7 +231,7 @@ class AStar:
 
             if node[0] == self.goal_pair:
 
-                print("GOAL STATE REACHED")
+                # print("GOAL STATE REACHED")
 
                 return True
         
@@ -336,10 +312,7 @@ class AStar:
     
     def AStarPathPlanning(self):
 
-        # print(self.grid_dict)
-
         open_nodes = self.find_neighbours(self.initial_pair, 0, self.initial_pair)
-        # print(open_nodes)
 
         closed_nodes = []
 
@@ -359,17 +332,13 @@ class AStar:
                 
                 if node[2] + node[3] < lowest_distance:
 
-                    # if not(self.checkClosedNode(lowest_node, closed_nodes)):
                     lowest_distance = node[2] + node[3]
-                        # lowest_node = node
 
                 elif node[2] + node[3] == lowest_distance:
 
-                    # if not(self.checkClosedNode(lowest_node, closed_nodes)):
-
                     if node[3] < lowest_node[3]:
+
                         lowest_distance = node[2] + node[3]
-                            # lowest_node = node
 
             equal_distance_nodes = []
 
@@ -389,8 +358,6 @@ class AStar:
             # print(lowest_node, "", direction)
 
             new_nodes = self.find_neighbours(lowest_node[0], lowest_node[2], lowest_node[1])
-
-            # print(len(open_nodes), len(new_nodes), len(closed_nodes))
 
             if len(new_nodes) != 0:
 
@@ -423,168 +390,43 @@ class AStar:
 
         path = self.retrace_path(closed_nodes)
 
-        return path
+        self.path = path
 
 
-# def readgrid():
+    def convert_path(self):
 
-#     grid_dict = {}
-#     filereader = open("grid.txt", "r")
-#     grids = filereader.read().split("\n")
-#     filereader.close()
+        direction = []
 
-#     for grid in grids:
-#         if grid != "":
-#             string = grid.split(" ")
-#             grid_dict.update({(int(string[0]), int(string[1])) : int(string[2])})
+        # print(self.path)
 
-    
-#     # print(grid_dict[(480, 220)])
-#     # print(grid_dict[(120, 220)])
-#     # print(grid_dict[(120, 380)])
-#     # print(grid_dict[(480, 380)])
+        for node in self.path:
 
-#     # print(grid_dict[(380, 120)])
-#     # print(grid_dict[(220, 120)])
-#     # print(grid_dict[(220, 480)])
-#     # print(grid_dict[(380, 480)])
+            xDiff = node[0][0] - node[1][0]
+            yDiff = node[0][1] - node[1][1]
 
-#     # print("\n")
-    
-#     grid_array = []
-
-#     for key, value in grid_dict.items():
-#         grid_array.append(value)
-
-#     data = np.array(grid_array)
-
-#     reshape_data = np.reshape(data, (602, 602))
-
-#     trans_data = np.transpose(reshape_data)
-
-#     rot1_data = np.rot90(trans_data)
-
-#     # rot2_data = np.rot90(rot1_data)
-#     # rot3_data = np.rot90(rot2_data)
+            if yDiff > 0:
+                direction.append("t")
+            elif xDiff > 0:
+                direction.append("r")
+            elif yDiff < 0:
+                direction.append("b")
+            elif xDiff < 0:
+                direction.append("l")
+            
+        return direction
 
 
-#     # filewriter = open("grid_map.txt", "a")
+# obj = AStar((-5, 6), (-7.25, 4.75))
 
-#     # i = 0
-#     # j = 0
-#     # index = 0
+# obj.AStarPathPlanning()
 
-#     # while index != 602*602:
+# directions = obj.convert_path()
 
-#     #     if j == 601:
-#     #         filewriter.write("\n")
-#     #     elif i == 300 and j == 300:
-#     #         filewriter.write("x")
-#     #     elif rot1_data[i][j] == 0:
-#     #         filewriter.write(" ")
-#     #     elif rot1_data[i][j] == 1:
-#     #         filewriter.write("|")
-#     #     elif rot1_data[i][j] == 2:
-#     #         filewriter.write("*")
+# print(directions)
 
-#     #     j = j + 1
-#     #     index = index + 1
+# filewriter = open("sector3.txt", "a")
 
-#     #     if j == 602:
-#     #         j = 0
-#     #         i = i + 1
+# for direction in directions:
+#     filewriter.write(direction + "\n")
 
-#     # filewriter.close()
-
-#     counti = 0
-#     countj = 0
-
-#     dict_data = {}
-
-#     for i in range(602*602):
-
-#         dict_data.update({(counti, countj) : rot1_data[counti][countj]})
-#         # print(dict_data[(counti,countj)], counti, countj)
-#         countj = countj + 1
-
-#         if countj == 602:
-#             countj = 0
-#             counti = counti + 1
-
-#     # print(dict_data)
-
-#     return dict_data
-
-# grid_data = readgrid()
-
-# for key, value in grid_data.items():
-
-#     # if key[0] == 320 and key[1] >= 300 and key[1] <= 320:
-#     #     print(key, value)
-#     if key[0] == 339 and key[1] == 260:
-#         print(key, value)
-#     elif key[0] == 340 and key[1] == 220:
-#         print(key, value)
-#     elif key[0] == 120 and key[1] == 380:
-#         print(key, value)
-#     elif key[0] == 480 and key[1] == 380:
-#         print(key, value)
-#     # elif key[0] == 260 and key[1] == 339:
-#     #     print(key, value)
-
-# print(grid_data[(260, 340)])
-# print(grid_data[(260, 341)])
-# print(grid_data[(259, 340)])
-# print(grid_data[(261, 340)])
-# print(grid_data[(260, 339)])
-
-# print("\n")
-
-# print(grid_data[(480, 220)])
-# print(grid_data[(120, 220)])
-# print(grid_data[(120, 380)])
-# print(grid_data[(480, 380)])
-
-# print(grid_data[(380, 120)])
-# print(grid_data[(220, 120)])
-# print(grid_data[(220, 480)])
-# print(grid_data[(380, 480)])
-
-# print("hello")
-
-obj = AStar((2, 2), (-5, 6))
-
-path = obj.AStarPathPlanning()
-
-print(path)
-
-def convert_path(path):
-
-    direction = []
-
-    for node in path:
-
-        xDiff = node[0][0] - node[1][0]
-        yDiff = node[0][1] - node[1][1]
-
-        if yDiff > 0:
-            direction.append("t")
-        elif xDiff > 0:
-            direction.append("r")
-        elif yDiff < 0:
-            direction.append("b")
-        elif xDiff < 0:
-            direction.append("l")
-        
-    return direction
-
-directions = convert_path(path)
-
-filewriter = open("sector1.txt", "a")
-
-for direction in directions:
-    filewriter.write(direction + "\n")
-
-filewriter.close()
-        
-print(directions)
+# filewriter.close()
